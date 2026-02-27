@@ -30,16 +30,75 @@ public final class Constants {
     }
 
     public static final class OIConstants {
-        public static final int DRIVER_CONTROLLER_PORT = 0;
+        public static final int DRIVER_CONTROLLER_PORT   = 0;
+        public static final int OPERATOR_CONTROLLER_PORT = 1;
     }
-    
-    public static final class ShooterConstants {
-    // CAN ID — Phoenix Tuner X에서 Kraken X60 설정과 반드시 일치
-    public static final int SHOOTER_MOTOR_5_ID = 5;
-    public static final int SHOOTER_MOTOR_6_ID = 6;
-    public static final int SHOOTER_MOTOR_7_ID = 7;
 
-    // 전류 제한 (A) — Kraken X60 연속 권장: 60~80A
-    public static final double SUPPLY_CURRENT_LIMIT_AMPS = 60.0;
-}
+    public static final class ShooterConstants {
+        // CAN ID — Phoenix Tuner X에서 Kraken X60 설정과 반드시 일치
+        public static final int SHOOTER_MOTOR_5_ID = 5;
+        public static final int SHOOTER_MOTOR_6_ID = 6;
+        public static final int SHOOTER_MOTOR_7_ID = 7;
+
+        // 전류 제한 (A) — Kraken X60 연속 권장: 60~80A
+        public static final double SUPPLY_CURRENT_LIMIT_AMPS = 60.0;
+    }
+
+    // =========================================================
+    // 인테이크 상수
+    // =========================================================
+    public static final class IntakeConstants {
+
+        // ── CAN ID ──
+        /** 인테이크 롤러 (Kraken X60 / TalonFX) */
+        public static final int INTAKE_ROLLER_ID = 8;
+        /** 인테이크 피벗 (CIM / SparkMax Brushed) */
+        public static final int INTAKE_PIVOT_ID  = 9;
+
+        // ── 롤러 설정 ──
+        /** 롤러 출력 (0.0 ~ 1.0) */
+        public static final double ROLLER_SPEED = 0.7;
+
+        /**
+         * ★ 롤러 방향 반전 플래그
+         *   false = 버튼 누르면 정회전 (인테이크 IN 방향)
+         *   true  = 버튼 누르면 역회전 (인테이크 OUT 방향)
+         *   → 기구 조립 후 실제 방향 확인하여 변경하세요.
+         */
+        public static final boolean ROLLER_INVERTED = false;
+
+        /** 롤러 전류 제한 (A) — Kraken X60 연속 권장: 60~80A */
+        public static final double ROLLER_SUPPLY_CURRENT_LIMIT_AMPS = 60.0;
+
+        // ── 피벗 설정 ──
+        /** 피벗 출력 (0.0 ~ 1.0) */
+        public static final double PIVOT_SPEED = 0.4;
+
+        /** 피벗 전류 제한 (A) — CIM 연속 권장: 30~40A */
+        public static final double PIVOT_CURRENT_LIMIT_AMPS = 35.0;
+    }
+
+    // =========================================================
+    // 컨베이어 상수
+    // =========================================================
+    public static final class ConveyorConstants {
+
+        // ── CAN ID ──
+        /** 컨베이어 벨트 (CIM / SparkMax Brushed) */
+        public static final int CONVEYOR_MOTOR_ID = 10;
+
+        /** 컨베이어 출력 (0.0 ~ 1.0) */
+        public static final double CONVEYOR_SPEED = 0.6;
+
+        /**
+         * ★ 컨베이어 방향 반전 플래그
+         *   false = 버튼 누르면 정회전 (슈터 방향으로 이송)
+         *   true  = 버튼 누르면 역회전
+         *   → 기구 조립 후 실제 방향 확인하여 변경하세요.
+         */
+        public static final boolean CONVEYOR_INVERTED = false;
+
+        /** 컨베이어 전류 제한 (A) — CIM 연속 권장: 30~40A */
+        public static final double CONVEYOR_CURRENT_LIMIT_AMPS = 35.0;
+    }
 }
