@@ -2,7 +2,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.signals.InvertedValue;          // ← 추가
+import com.ctre.phoenix6.signals.InvertedValue;          
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
