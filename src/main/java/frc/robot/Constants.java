@@ -72,7 +72,7 @@ public final class Constants {
 
         // ── 피벗 설정 ──
         /** 피벗 출력 (0.0 ~ 1.0) */
-        public static final double PIVOT_SPEED = 0.4;
+        public static final double PIVOT_SPEED = 0.3;
 
         /** 피벗 전류 제한 (A) — CIM 연속 권장: 30~40A */
         public static final double PIVOT_CURRENT_LIMIT_AMPS = 35.0;
