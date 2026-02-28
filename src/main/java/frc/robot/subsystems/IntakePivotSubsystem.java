@@ -3,8 +3,8 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.ResetMode;
+import com.revrobotics.PersistMode;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
 
@@ -32,14 +32,14 @@ public class IntakePivotSubsystem extends SubsystemBase {
      * → Constants.IntakeConstants.PIVOT_SPEED 참조
      */
     public void pivotUp() {
-        m_pivotMotor.set(IntakeConstants.PIVOT_SPEED);
+        m_pivotMotor.set(-IntakeConstants.PIVOT_SPEED);
     }
 
     /**
      * 피벗을 아래로 내립니다 (역회전 방향).
      */
     public void pivotDown() {
-        m_pivotMotor.set(-IntakeConstants.PIVOT_SPEED);
+        m_pivotMotor.set(IntakeConstants.PIVOT_SPEED);
     }
 
     /** 피벗 정지 */
