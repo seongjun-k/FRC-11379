@@ -52,7 +52,7 @@ public final class Constants {
         // ── CAN ID ──
         /** 인테이크 롤러 (Kraken X60 / TalonFX) */
         public static final int INTAKE_ROLLER_ID = 8;
-        /** 인테이크 피벗 (CIM / SparkMax Brushed) */
+        /** 인테이크 피벗 (NEO 1.1 / SparkMax Brushless) */
         public static final int INTAKE_PIVOT_ID  = 9;
 
         // ── 롤러 설정 ──
@@ -74,8 +74,18 @@ public final class Constants {
         /** 피벗 출력 (0.0 ~ 1.0) */
         public static final double PIVOT_SPEED = 0.3;
 
-        /** 피벗 전류 제한 (A) — CIM 연속 권장: 30~40A */
-        public static final double PIVOT_CURRENT_LIMIT_AMPS = 35.0;
+        /**
+         * NEO 1.1 스마트 전류 제한 (A)
+         * 이 값을 초과하면 소프트웨어가 모터를 정지시킵니다 (기계적 한계 도달 감지용).
+         * NEO 1.1 정격 연속: ~40A, 피벗 안전 제한: 20A
+         */
+        public static final double PIVOT_CURRENT_LIMIT_AMPS = 20.0;
+
+        /**
+         * 하드웨어 레벨 절대 전류 차단 (A)
+         * SparkMax가 이 값을 초과하면 즉시 출력을 차단합니다.
+         */
+        public static final double PIVOT_SECONDARY_CURRENT_LIMIT_AMPS = 25.0;
     }
 
     // =========================================================
