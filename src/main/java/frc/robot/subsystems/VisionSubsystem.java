@@ -36,12 +36,8 @@ public class VisionSubsystem extends SubsystemBase {
     private final PhotonPoseEstimator m_photonEstimator;
 
     public VisionSubsystem() {
-        // kDefaultField: WPILib가 현재 시즌 기준 최신 필드를 자동으로 가리킨다.
-        // k2026Reefscape 는 2025 시즌 상수라 2026 환경에서 존재하지 않으므로
-        // 시즌 고유 상수를 쓰고 싶다면 IDE 자동완성으로 k2026... 항목을 확인하세요.
-        AprilTagFieldLayout layout =
-            AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
-
+        // WPILib 버전에 따라 상수명이 다를 수 있으니 빌드 오류 시 확인
+        var layout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
         m_photonEstimator = new PhotonPoseEstimator(
             layout,
             // 여러 태그를 동시에 보이면 정확도가 높아진다
