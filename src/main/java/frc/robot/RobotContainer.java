@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.AutoAlignCommand;
 import frc.robot.commands.ConveyorCommand;
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.IntakePivotCommand;
@@ -20,31 +21,32 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.IntakePivotSubsystem;
 import frc.robot.subsystems.IntakeRollerSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 
 public class RobotContainer {
 
-    // ── 서브시스템 ──────────────────────────────────────────────
-    private final DriveSubsystem       m_drive         = new DriveSubsystem();
-    private final ShooterSubsystem     m_shooter       = new ShooterSubsystem();
-    private final IntakeRollerSubsystem m_intakeRoller = new IntakeRollerSubsystem();
-    private final IntakePivotSubsystem  m_intakePivot  = new IntakePivotSubsystem();
-    private final ConveyorSubsystem     m_conveyor     = new ConveyorSubsystem();
+    // ── 서브시스템 ────────────────────────────────────────────
+    private final DriveSubsystem        m_drive         = new DriveSubsystem();
+    private final ShooterSubsystem      m_shooter       = new ShooterSubsystem();
+    private final IntakeRollerSubsystem m_intakeRoller  = new IntakeRollerSubsystem();
+    private final IntakePivotSubsystem  m_intakePivot   = new IntakePivotSubsystem();
+    private final ConveyorSubsystem     m_conveyor      = new ConveyorSubsystem();
+    private final VisionSubsystem       m_vision        = new VisionSubsystem();
 
-    // ── 컨트롤러 ────────────────────────────────────────────────
-    /** 포트 0: 드라이버 (드라이브 + 슈터) */
-    private final CommandXboxController m_driverController   =
+    // ── 컨트롤러 ──────────────────────────────────────────
+    /** 포트 0: 드라이버 (드라이브 + 슈터 + 자동 정렬) */
+    private final CommandXboxController m_driverController =
         new CommandXboxController(DRIVER_CONTROLLER_PORT);
 
     /**
-     * 포트 1: 오퍼레이터 (인테이크 / 피벗 / 컨베이어)
+     * 포트 1(가정): 오퍼레이터 (인테이크 / 피벗 / 콘베이어)
+     * 비고: 콘트롤러 한 대로 테스트하려면 OIConstants.OPERATOR_CONTROLLER_PORT = 0 유지
+     *
      * 버튼 배치:
      *   A 버튼  (button 1) → 인테이크 롤러 구동
      *   LB 버튼 (button 5) → 피벗 UP
      *   RB 버튼 (button 6) → 피벗 DOWN
-     *   B 버튼  (button 2) → 컨베이어 구동
-     *
-     * Xbox 버튼 번호 참고:
-     *   1=A, 2=B, 3=X, 4=Y, 5=LB, 6=RB, 7=Back, 8=Start
+     *   B 버튼  (button 2) → 콘베이어 구동
      */
     private final CommandXboxController m_operatorController =
         new CommandXboxController(OPERATOR_CONTROLLER_PORT);
@@ -69,7 +71,7 @@ public class RobotContainer {
 
     private void configureBindings() {
 
-        // ── 드라이브 (기존 유지) ──────────────────────────────────
+        // ── 드라이브: 오른쪽 조이스틱 조작 시 직진 보정 자동 활성화 ────
         m_drive.setDefaultCommand(
             new DriveCommand(
                 m_drive,
@@ -78,7 +80,7 @@ public class RobotContainer {
             )
         );
 
-        // ── 슈터: RT = 정방향, LT = 역방향 (기존 유지) ───────────
+        // ── 슈터: RT = 정방향, LT = 역방향 ────────────────────────
         m_shooter.setDefaultCommand(
             new ShooterCommand(
                 m_shooter,
@@ -87,11 +89,14 @@ public class RobotContainer {
             )
         );
 
+        // ── 자동 정렬: X 버튼 누르고 있는 동안 제자리 AprilTag 조준 ──
+        // 허용 범위(1.5도) 안으로 맞으면 커맨드 자동 종료
+        m_driverController.x().whileTrue(new AutoAlignCommand(m_drive, m_vision));
+
         // ── 인테이크 롤러: A 버튼 누르는 동안 구동 ───────────────
-        // 방향 반전은 Constants.IntakeConstants.ROLLER_INVERTED 참조
         m_operatorController.a().whileTrue(new IntakeRollerCommand(m_intakeRoller));
 
-        // ── 인테이크 피벗: LB = UP / RB = DOWN ───────────────────
+        // ── 인테이크 피벗: LB = UP / RB = DOWN ─────────────────
         m_operatorController.leftBumper().whileTrue(
             new IntakePivotCommand(m_intakePivot, Direction.UP)
         );
@@ -99,8 +104,7 @@ public class RobotContainer {
             new IntakePivotCommand(m_intakePivot, Direction.DOWN)
         );
 
-        // ── 컨베이어: B 버튼 누르는 동안 구동 ────────────────────
-        // 방향 반전은 Constants.ConveyorConstants.CONVEYOR_INVERTED 참조
+        // ── 콘베이어: B 버튼 누르는 동안 구동 ────────────────
         m_operatorController.b().whileTrue(new ConveyorCommand(m_conveyor));
     }
 
