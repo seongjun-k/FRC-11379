@@ -26,12 +26,14 @@ import frc.robot.subsystems.VisionSubsystem;
 public class RobotContainer {
 
     // ── 서브시스템 ────────────────────────────────────────────
-    private final DriveSubsystem        m_drive         = new DriveSubsystem();
+    // ★ VisionSubsystem을 DriveSubsystem보다 먼저 선언해야 합니다.
+    //   DriveSubsystem 생성자에 m_vision을 주입하는 구조이기 때문입니다.
+    private final VisionSubsystem       m_vision        = new VisionSubsystem();
+    private final DriveSubsystem        m_drive         = new DriveSubsystem(m_vision);
     private final ShooterSubsystem      m_shooter       = new ShooterSubsystem();
     private final IntakeRollerSubsystem m_intakeRoller  = new IntakeRollerSubsystem();
     private final IntakePivotSubsystem  m_intakePivot   = new IntakePivotSubsystem();
     private final ConveyorSubsystem     m_conveyor      = new ConveyorSubsystem();
-    private final VisionSubsystem       m_vision        = new VisionSubsystem();
 
     // ── 컨트롤러 ──────────────────────────────────────────
     /** 포트 0: 드라이버 (드라이브 + 슈터 + 자동 정렬) */
@@ -39,8 +41,8 @@ public class RobotContainer {
         new CommandXboxController(DRIVER_CONTROLLER_PORT);
 
     /**
-     * 포트 1(가정): 오퍼레이터 (인테이크 / 피벗 / 콘베이어)
-     * 비고: 콘트롤러 한 대로 테스트하려면 OIConstants.OPERATOR_CONTROLLER_PORT = 0 유지
+     * 오퍼레이터 (인테이크 / 피벗 / 콘베이어)
+     * 콘트롤러 한 대로 테스트하려면: OIConstants.OPERATOR_CONTROLLER_PORT = 0 유지
      *
      * 버튼 배치:
      *   A 버튼  (button 1) → 인테이크 롤러 구동
@@ -71,7 +73,7 @@ public class RobotContainer {
 
     private void configureBindings() {
 
-        // ── 드라이브: 오른쪽 조이스틱 조작 시 직진 보정 자동 활성화 ────
+        // ── 드라이브: 직진 보정 활성화 ────────────────────────
         m_drive.setDefaultCommand(
             new DriveCommand(
                 m_drive,
@@ -90,7 +92,6 @@ public class RobotContainer {
         );
 
         // ── 자동 정렬: X 버튼 누르고 있는 동안 제자리 AprilTag 조준 ──
-        // 허용 범위(1.5도) 안으로 맞으면 커맨드 자동 종료
         m_driverController.x().whileTrue(new AutoAlignCommand(m_drive, m_vision));
 
         // ── 인테이크 롤러: A 버튼 누르는 동안 구동 ───────────────

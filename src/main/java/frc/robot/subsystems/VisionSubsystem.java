@@ -1,6 +1,17 @@
 package frc.robot.subsystems;
 
+import java.util.Optional;
+
+import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class VisionSubsystem extends SubsystemBase {
@@ -10,6 +21,40 @@ public class VisionSubsystem extends SubsystemBase {
      * 대시보드 접속 후 Cameras 탭에서 카메라 이름 확인 후 수정하세요.
      */
     private final PhotonCamera m_camera = new PhotonCamera("OV9281");
+
+    /**
+     * 로봇 중심(바닥 중앙) 기준 카메라까지의 오프셋
+     * ★ 실제 측정값으로 반드시 수정할 것! (단위: 미터, 라디안)
+     *   Translation3d(X앞뒤, Y좌우, Z위아래)
+     *   Rotation3d(롤, 피치, 요우) - 정면을 바라보면 모두 0
+     */
+    private static final Transform3d CAMERA_OFFSET = new Transform3d(
+        new Translation3d(0.0, 0.0, 0.5),   // 假정: 로봇 중심에서 위로 0.5m
+        new Rotation3d(0, 0, 0)
+    );
+
+    private final PhotonPoseEstimator m_photonEstimator;
+
+    public VisionSubsystem() {
+        // 假정: AprilTagFields.k2026Reefscape - 2026 시즐 필드맵
+        // WPILib 버전에 따라 상수명이 다를 수 있으니 빌드 오류 시 확인
+        var layout = AprilTagFieldLayout.loadField(AprilTagFields.k2026Reefscape);
+        m_photonEstimator = new PhotonPoseEstimator(
+            layout,
+            // 여러 태그를 동시에 보이면 정확도가 높아진다
+            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            CAMERA_OFFSET
+        );
+    }
+
+    /**
+     * 칼만 필터에 넣을 비전 측정 결과 반환.
+     * 타임스탬프가 포함되어 있어 시간 지연 보정이 자동 적용된다.
+     * AprilTag가 보이지 않으면 Optional.empty() 반환.
+     */
+    public Optional<EstimatedRobotPose> getEstimatedPose() {
+        return m_photonEstimator.update(m_camera.getLatestResult());
+    }
 
     /** AprilTag 타겟이 시야에 있는지 여부 */
     public boolean hasTarget() {

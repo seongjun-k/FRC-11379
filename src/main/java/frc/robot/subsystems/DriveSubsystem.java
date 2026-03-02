@@ -13,11 +13,12 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPLTVController;
 import com.studica.frc.AHRS;
 
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
-import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -38,15 +39,19 @@ public class DriveSubsystem extends SubsystemBase {
     );
 
     // ── 센서 ───────────────────────────────
-    private final AHRS m_gyro = new AHRS(AHRS.NavXComType.kMXP_SPI);
+    private final AHRS            m_gyro;
+    private final VisionSubsystem m_vision;
 
-    // ── 오도메트리 ────────────────────────────
-    private final DifferentialDriveKinematics m_kinematics =
+    // ── 칼만 필터 내장 위치 추정기 ───────────────────
+    private final DifferentialDriveKinematics    m_kinematics =
         new DifferentialDriveKinematics(TRACK_WIDTH_METERS);
-    private final DifferentialDriveOdometry m_odometry;
+    private final DifferentialDrivePoseEstimator m_poseEstimator;
 
     // ───────────────────────────────────────────────
-    public DriveSubsystem() {
+    public DriveSubsystem(VisionSubsystem vision) {
+        m_gyro   = new AHRS(AHRS.NavXComType.kMXP_SPI);
+        m_vision = vision;
+
         configureTalon(m_leftFront,  false);
         configureTalon(m_leftRear,   false);
         configureTalon(m_rightFront, true);  // 우측 반전
@@ -60,10 +65,18 @@ public class DriveSubsystem extends SubsystemBase {
         m_leftFront.setPosition(0);
         m_rightFront.setPosition(0);
 
-        m_odometry = new DifferentialDriveOdometry(
+        m_poseEstimator = new DifferentialDrivePoseEstimator(
+            m_kinematics,
             getGyroRotation(),
             getLeftDistanceMeters(),
-            getRightDistanceMeters()
+            getRightDistanceMeters(),
+            new Pose2d(),
+            // 오도메트리 신뢰도 표준편차 [x(m), y(m), theta(rad)]
+            // 값이 작을수록 오도메트리를 더 신뢰 -> 주행 중 오차가 적으면 낮춰라
+            VecBuilder.fill(0.05, 0.05, 0.05),
+            // 비전 측정값 신뢰도 표준편차 [x(m), y(m), theta(rad)]
+            // 값이 작을수록 비전을 더 신뢰 -> 태그가 멀리 있으면 크게 설정
+            VecBuilder.fill(0.5, 0.5, 0.5)
         );
 
         configurePathPlanner();
@@ -112,29 +125,39 @@ public class DriveSubsystem extends SubsystemBase {
         return Rotation2d.fromDegrees(-m_gyro.getAngle());
     }
 
-    // ── 주기적 오도메트리 업데이트 ────────────────
+    // ── 주기적 업데이트 ───────────────────────────
     @Override
     public void periodic() {
-        m_odometry.update(
+        // 1단계: 엔코더+자이로 오도메트리 업데이트
+        m_poseEstimator.update(
             getGyroRotation(),
             getLeftDistanceMeters(),
             getRightDistanceMeters()
         );
 
-        var pose = m_odometry.getPoseMeters();
-        SmartDashboard.putNumber("Odometry X (m)", pose.getX());
-        SmartDashboard.putNumber("Odometry Y (m)", pose.getY());
-        SmartDashboard.putNumber("Odometry Deg",  pose.getRotation().getDegrees());
+        // 2단계: ★ 칼만 필터 핵심 - 비전 측정값 자동 융합
+        // 타임스탬프를 함께 넣어서 시간 지연 보정도 수행
+        m_vision.getEstimatedPose().ifPresent(estimated ->
+            m_poseEstimator.addVisionMeasurement(
+                estimated.estimatedPose.toPose2d(),
+                estimated.timestampSeconds
+            )
+        );
+
+        var pose = m_poseEstimator.getEstimatedPosition();
+        SmartDashboard.putNumber("Pose X (m)",    pose.getX());
+        SmartDashboard.putNumber("Pose Y (m)",    pose.getY());
+        SmartDashboard.putNumber("Pose Deg",      pose.getRotation().getDegrees());
         SmartDashboard.putNumber("Left Dist (m)",  getLeftDistanceMeters());
         SmartDashboard.putNumber("Right Dist (m)", getRightDistanceMeters());
         SmartDashboard.putNumber("Gyro Yaw (deg)", getGyroRotation().getDegrees());
     }
 
-    // ── PathPlanner 필수 메서드 ─────────────────────
+    // ── PathPlanner 필수 메서드 ──────────────────────
 
-    /** 현재 필드 기준 위치 반환 */
+    /** 현재 필드 기준 위치 반환 (칼만 필터 적용된 추정치) */
     public Pose2d getPose() {
-        return m_odometry.getPoseMeters();
+        return m_poseEstimator.getEstimatedPosition();
     }
 
     /** 자이로 0점 초기화 */
@@ -142,19 +165,16 @@ public class DriveSubsystem extends SubsystemBase {
         m_gyro.reset();
     }
 
-    /**
-     * 텔레옵 직진 보정 및 AutoAlignCommand에서 사용하는 자이로 각도 반환
-     * 반환값: WPILib 기준(반시계 = 양수)으로 변환된 degree
-     */
+    /** 텔레옥 직진 보정 및 AutoAlignCommand에서 사용 */
     public double getGyroAngle() {
         return -m_gyro.getAngle();
     }
 
-    /** 오토 시작점 기준으로 오도메트리 초기화 */
+    /** 오토 시작점 기준으로 PoseEstimator 초기화 */
     public void resetPose(Pose2d pose) {
         m_leftFront.setPosition(0);
         m_rightFront.setPosition(0);
-        m_odometry.resetPosition(
+        m_poseEstimator.resetPosition(
             getGyroRotation(),
             0, 0,
             pose
