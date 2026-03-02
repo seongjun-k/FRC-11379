@@ -3,13 +3,13 @@ package frc.robot.subsystems;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.PersistMode;
+import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig;
-import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SoftLimitConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -30,8 +30,8 @@ import frc.robot.Constants.IntakeConstants;
  */
 public class IntakePivotSubsystem extends SubsystemBase {
 
-    private final SparkMax                 m_pivotMotor;
-    private final RelativeEncoder          m_encoder;
+    private final SparkMax                  m_pivotMotor;
+    private final RelativeEncoder           m_encoder;
     private final SparkClosedLoopController m_controller;
 
     // 현재 PID 목표 위치 (rotations). 항상 이 값을 향해 PID가 동작함
@@ -49,13 +49,13 @@ public class IntakePivotSubsystem extends SubsystemBase {
             .reverseSoftLimit(IntakeConstants.PIVOT_REVERSE_SOFT_LIMIT); // 최대 수납 위치
 
         // ── Position PID 설정 (SparkMax 온보드) ──
+        // feedbackSensor 생략 → SparkMax는 기본값이 이미 kPrimaryEncoder
         ClosedLoopConfig closedLoopConfig = new ClosedLoopConfig();
         closedLoopConfig
-            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
             .p(IntakeConstants.PIVOT_KP)
             .i(IntakeConstants.PIVOT_KI)
             .d(IntakeConstants.PIVOT_KD)
-            .outputRange(-0.5, 0.5); // 최대 출력 제한: 빠른 동작 방지
+            .outputRange(-0.5, 0.5); // 최대 출력 50% 제한: 급격한 동작 방지
 
         // ── 전체 SparkMax 설정 ──
         SparkMaxConfig config = new SparkMaxConfig();
@@ -79,16 +79,12 @@ public class IntakePivotSubsystem extends SubsystemBase {
     // ───────────────────────────────────────────────────────────
     // ★ 중력 보상 계산
     // 공식: kG * cos(수평 기준 현재 각도)
-    //   - 수평(0°)에서 cos = 1.0 → 최대 보상
-    //   - 수직 위(90°)에서 cos = 0.0 → 보상 없음
-    //   - 수직 아래(-90°)에서 cos = 0.0 → 보상 없음
+    //   수평(0°)에서 cos=1.0 → 최대 보상  (중력이 가장 센 자세)
+    //   수직 위(90°)에서 cos=0.0 → 보상 없음 (중력 토크 없음)
     // ───────────────────────────────────────────────────────────
     private double getGravityFeedforward() {
-        // 모터 회전수 → 피벗 회전 각도 (degrees)
         double degreesRotated = m_encoder.getPosition() * (360.0 / IntakeConstants.PIVOT_GEAR_RATIO);
-        // 수평 기준 현재 각도: 홈에서 시작해서 내려올수록 감소
         double angleFromHorizontalDeg = IntakeConstants.PIVOT_HOME_ANGLE_DEG - degreesRotated;
-        // kG * cos(θ) [Volt]
         return IntakeConstants.PIVOT_KG_VOLTS * Math.cos(Math.toRadians(angleFromHorizontalDeg));
     }
 
@@ -108,33 +104,32 @@ public class IntakePivotSubsystem extends SubsystemBase {
 
     /**
      * 현재 위치에서 그대로 멈춤 (버튼 떼면 호출)
-     * kG가 중력을 보상하므로 브레이크만으론 버틸 수 없는 무거운 암도 제자리 유지
+     * kG가 중력을 보상하므로 가동 컴포넌트만으론 버틸 수 없는 무거운 암도 제자리 유지
      */
     public void holdCurrentPosition() {
         m_targetPosition = m_encoder.getPosition();
     }
 
-    /** 공 안 들어올 때 아래로 까닥 (BUMP_STEP만큼 더 내림) */
+    /** 까닥아래 (BUMP_STEP만큼 목표를 더 내림) */
     public void bumpDown() {
         double newTarget = m_targetPosition + IntakeConstants.PIVOT_BUMP_STEP;
-        // 소프트 리밋 범위 내에서만 허용
         m_targetPosition = Math.min(newTarget, IntakeConstants.PIVOT_FORWARD_SOFT_LIMIT);
     }
 
-    /** 위로 까닥 (BUMP_STEP만큼 더 올림) */
+    /** 까닥위 (BUMP_STEP만큼 목표를 더 올림) */
     public void bumpUp() {
         double newTarget = m_targetPosition - IntakeConstants.PIVOT_BUMP_STEP;
         m_targetPosition = Math.max(newTarget, IntakeConstants.PIVOT_REVERSE_SOFT_LIMIT);
     }
 
-    /** 현재 엔코더 위치 반환 (rotations, 홈=0 기준) */
+    /** 현재 엔코더 위치 반환 (rotations) */
     public double getPosition() {
         return m_encoder.getPosition();
     }
 
-    /** 목표 위치와 실제 위치 오차가 허용 범위 내인지 */
+    /** 목표 위치 도달 여부 */
     public boolean isAtTarget() {
-        return Math.abs(m_encoder.getPosition() - m_targetPosition) < 0.3; // 0.3 rot 허용
+        return Math.abs(m_encoder.getPosition() - m_targetPosition) < 0.3;
     }
 
     /** 과전류 여부 */
@@ -142,7 +137,7 @@ public class IntakePivotSubsystem extends SubsystemBase {
         return m_pivotMotor.getOutputCurrent() > IntakeConstants.PIVOT_CURRENT_LIMIT_AMPS;
     }
 
-    /** 엔코더 0점 강제 초기화 (경기 전 홈 위치 확인 후 호출) */
+    /** 엔코더 0점 강제 초기화 */
     public void resetEncoder() {
         m_encoder.setPosition(IntakeConstants.PIVOT_HOME_POS);
         m_targetPosition = IntakeConstants.PIVOT_HOME_POS;
@@ -159,12 +154,11 @@ public class IntakePivotSubsystem extends SubsystemBase {
         m_controller.setReference(
             m_targetPosition,
             ControlType.kPosition,
-            com.revrobotics.spark.config.ClosedLoopConfig.ClosedLoopSlot.kSlot0,
+            ClosedLoopSlot.kSlot0,
             arbFF,
             ArbFFUnits.kVoltage
         );
 
-        // SmartDashboard 디버깅
         SmartDashboard.putNumber("Pivot/Position (rot)", m_encoder.getPosition());
         SmartDashboard.putNumber("Pivot/Target (rot)",   m_targetPosition);
         SmartDashboard.putNumber("Pivot/Current (A)",    m_pivotMotor.getOutputCurrent());
