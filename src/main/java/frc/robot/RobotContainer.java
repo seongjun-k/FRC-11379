@@ -36,7 +36,16 @@ public class RobotContainer {
     private final ConveyorSubsystem     m_conveyor      = new ConveyorSubsystem();
 
     // ── 콘트롤러 ───────────────────────────────────────────
-    /** 포트 0: 드라이버 (드라이브 + 슈터 + 자동 정렬) */
+    /** 포트 0: 드라이버 (드라이브 + 슈터 + 자동 정렬)
+     *
+     * 버튼 배치:
+     *   왼쪽 스틱 Y축 / 오른쪽 스틱 X축 → 주행 (DriveCommand)
+     *   RT       → 슈터 정방향 발사
+     *   LT       → 슈터 역방향 구동
+     *   D-pad ↑  → 슈터 목표 속도 +5%
+     *   D-pad ↓  → 슈터 목표 속도 -5%
+     *   X 버튼  → 제자리 AprilTag 조준 (AutoAlignCommand)
+     */
     private final CommandXboxController m_driverController =
         new CommandXboxController(DRIVER_CONTROLLER_PORT);
 
@@ -45,11 +54,10 @@ public class RobotContainer {
      * 콘트롤러 한 대로 테스트하려면: OIConstants.OPERATOR_CONTROLLER_PORT = 0 유지
      *
      * 버튼 배치:
-     *   A 버튼  (button 1) → 인테이크 롤러 구동
-     *   LB 버튼 (button 5) → 피벗 UP
-     *   RB 버튼 (button 6) → 피벗 DOWN
-     *   B 버튼  (button 2) → 콘베이어 구동
-     *   X 버튼  (button 3) → 제자리 AprilTag 조준
+     *   RB 버튼 → 인테이크 롤러 구동
+     *   Y 버튼  → 피벗 UP (수납)
+     *   A 버튼  → 피벗 DOWN (전개)
+     *   LB 버튼 → 콘베이어 구동
      */
     private final CommandXboxController m_operatorController =
         new CommandXboxController(OPERATOR_CONTROLLER_PORT);
@@ -98,10 +106,10 @@ public class RobotContainer {
         // ── 자동 정렬: X 버튼 누르고 있는 동안 제자리 AprilTag 조준 ──
         m_driverController.x().whileTrue(new AutoAlignCommand(m_drive, m_vision));
 
-        // ── 인테이크 롤러: A 버튼 누르는 동안 구동 ─────────────
+        // ── 인테이크 롤러: RB 버튼 누르는 동안 구동 ─────────────
         m_operatorController.rightBumper().whileTrue(new IntakeRollerCommand(m_intakeRoller));
 
-        // ── 인테이크 피벗: LB = UP / RB = DOWN ────────────────────
+        // ── 인테이크 피벗: Y = UP(수납) / A = DOWN(전개) ───────────────
         m_operatorController.y().whileTrue(
             new IntakePivotCommand(m_intakePivot, Direction.UP)
         );
@@ -109,7 +117,7 @@ public class RobotContainer {
             new IntakePivotCommand(m_intakePivot, Direction.DOWN)
         );
 
-        // ── 콘베이어: B 버튼 누르는 동안 구동 ──────────────
+        // ── 콘베이어: LB 버튼 누르는 동안 구동 ──────────────
         m_operatorController.leftBumper().whileTrue(new ConveyorCommand(m_conveyor));
     }
 
