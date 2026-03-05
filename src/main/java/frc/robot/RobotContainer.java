@@ -96,18 +96,18 @@ public class RobotContainer {
         m_driverController.x().whileTrue(new AutoAlignCommand(m_drive, m_vision));
 
         // ── 인테이크 롤러: A 버튼 누르는 동안 구동 ───────────────
-        m_operatorController.a().whileTrue(new IntakeRollerCommand(m_intakeRoller));
+        m_operatorController.rightBumper().whileTrue(new IntakeRollerCommand(m_intakeRoller));
 
         // ── 인테이크 피벗: LB = UP / RB = DOWN ─────────────────
-        m_operatorController.leftBumper().whileTrue(
+        m_operatorController.y().whileTrue(
             new IntakePivotCommand(m_intakePivot, Direction.UP)
         );
-        m_operatorController.rightBumper().whileTrue(
+        m_operatorController.a().whileTrue(
             new IntakePivotCommand(m_intakePivot, Direction.DOWN)
         );
 
         // ── 콘베이어: B 버튼 누르는 동안 구동 ────────────────
-        m_operatorController.b().whileTrue(new ConveyorCommand(m_conveyor));
+        m_operatorController.leftBumper().whileTrue(new ConveyorCommand(m_conveyor));
     }
 
     public Command getAutonomousCommand() {

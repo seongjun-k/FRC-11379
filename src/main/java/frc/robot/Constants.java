@@ -85,14 +85,14 @@ public final class Constants {
         // 홈 = 0.0 (전원 켤 때 피벗이 반드시 이 위치에 있어야 함!)
         public static final double PIVOT_HOME_POS   = 0.0;
         // 인테이크 전개 위치: SmartDashboard "Pivot/Position (rot)" 확인 후 실측값으로 교체
-        public static final double PIVOT_INTAKE_POS = -10.714; // [가정] 실측 필요
-        // 까닥 한 번 이동량 (rotations)
+        public static final double PIVOT_INTAKE_POS = -11; // [가정] 실측 필요
+        // 한 번 이동량 (rotations)
         public static final double PIVOT_BUMP_STEP  = 0.5;
 
         // ── 소프트 리밋 (float, SparkMax 요구) ──
         // 절대 넘어가면 안 되는 하드웨어 경계 — SparkMax가 출력 차단
         public static final float PIVOT_FORWARD_SOFT_LIMIT = 1.0f; // 최대 아래 (INTAKE_POS + 여유)
-        public static final float PIVOT_REVERSE_SOFT_LIMIT = -11.5f; // 최대 위 (HOME보다 약간 위 여유)
+        public static final float PIVOT_REVERSE_SOFT_LIMIT = -12f; // 최대 위 (HOME보다 약간 위 여유)
     }
 
     // =========================================================
