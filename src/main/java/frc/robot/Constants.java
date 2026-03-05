@@ -60,7 +60,7 @@ public final class Constants {
         public static final double ROLLER_SUPPLY_CURRENT_LIMIT_AMPS = 30.0;
 
         // ── 피벗 전류 제한 ──
-        public static final double PIVOT_CURRENT_LIMIT_AMPS           = 20.0;
+        public static final double PIVOT_CURRENT_LIMIT_AMPS           = 10.0;
         public static final double PIVOT_SECONDARY_CURRENT_LIMIT_AMPS = 25.0;
 
         // ── 피벗 Position PID 게인 (SparkMax 온보드 PID) ──
@@ -79,20 +79,20 @@ public final class Constants {
         //   예: 인테이크가 완전히 수직으로 접히면 90, 약간 비스듬히 접히면 75
         public static final double PIVOT_HOME_ANGLE_DEG = 90.0; // [가정] 실측 필요
         // PIVOT_GEAR_RATIO: 모터 → 피벗 축의 감속비
-        public static final double PIVOT_GEAR_RATIO = 20.0;     // [가정] 실측 필요
+        public static final double PIVOT_GEAR_RATIO = 80.0;     // [가정] 실측 필요
 
         // ── 피벗 목표 위치 (모터 회전수, 홈 = 0.0 기준) ──
         // 홈 = 0.0 (전원 켤 때 피벗이 반드시 이 위치에 있어야 함!)
         public static final double PIVOT_HOME_POS   = 0.0;
         // 인테이크 전개 위치: SmartDashboard "Pivot/Position (rot)" 확인 후 실측값으로 교체
-        public static final double PIVOT_INTAKE_POS = 15.0; // [가정] 실측 필요
+        public static final double PIVOT_INTAKE_POS = -10.714; // [가정] 실측 필요
         // 까닥 한 번 이동량 (rotations)
         public static final double PIVOT_BUMP_STEP  = 0.5;
 
         // ── 소프트 리밋 (float, SparkMax 요구) ──
         // 절대 넘어가면 안 되는 하드웨어 경계 — SparkMax가 출력 차단
-        public static final float PIVOT_FORWARD_SOFT_LIMIT = 16.0f; // 최대 아래 (INTAKE_POS + 여유)
-        public static final float PIVOT_REVERSE_SOFT_LIMIT = -1.0f; // 최대 위 (HOME보다 약간 위 여유)
+        public static final float PIVOT_FORWARD_SOFT_LIMIT = 1.0f; // 최대 아래 (INTAKE_POS + 여유)
+        public static final float PIVOT_REVERSE_SOFT_LIMIT = -11.5f; // 최대 위 (HOME보다 약간 위 여유)
     }
 
     // =========================================================

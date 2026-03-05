@@ -55,7 +55,7 @@ public class IntakePivotSubsystem extends SubsystemBase {
             .p(IntakeConstants.PIVOT_KP)
             .i(IntakeConstants.PIVOT_KI)
             .d(IntakeConstants.PIVOT_KD)
-            .outputRange(-0.5, 0.5); // 최대 출력 50% 제한: 급격한 동작 방지
+            .outputRange(-0.2, 0.2); // 최대 출력 50% 제한: 급격한 동작 방지
 
         // ── 전체 SparkMax 설정 ──
         SparkMaxConfig config = new SparkMaxConfig();
@@ -110,13 +110,13 @@ public class IntakePivotSubsystem extends SubsystemBase {
         m_targetPosition = m_encoder.getPosition();
     }
 
-    /** 까닥아래 (BUMP_STEP만큼 목표를 더 내림) */
+    /** 아래 (BUMP_STEP만큼 목표를 더 내림) */
     public void bumpDown() {
         double newTarget = m_targetPosition + IntakeConstants.PIVOT_BUMP_STEP;
         m_targetPosition = Math.min(newTarget, IntakeConstants.PIVOT_FORWARD_SOFT_LIMIT);
     }
 
-    /** 까닥위 (BUMP_STEP만큼 목표를 더 올림) */
+    /** 위 (BUMP_STEP만큼 목표를 더 올림) */
     public void bumpUp() {
         double newTarget = m_targetPosition - IntakeConstants.PIVOT_BUMP_STEP;
         m_targetPosition = Math.max(newTarget, IntakeConstants.PIVOT_REVERSE_SOFT_LIMIT);
