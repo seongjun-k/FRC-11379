@@ -152,12 +152,11 @@ public class IntakePivotSubsystem extends SubsystemBase {
 
         // SparkMax 온보드 Position PID + ArbFF(중력 보상 전압)
         m_controller.setReference(
-            m_targetPosition,
-            ControlType.kPosition,
-            ClosedLoopSlot.kSlot0,
-            arbFF,
-            ArbFFUnits.kVoltage
-        );
+        m_targetPosition,
+        ControlType.kPosition,
+        ClosedLoopSlot.kSlot0,
+        arbFF
+    );
 
         SmartDashboard.putNumber("Pivot/Position (rot)", m_encoder.getPosition());
         SmartDashboard.putNumber("Pivot/Target (rot)",   m_targetPosition);
