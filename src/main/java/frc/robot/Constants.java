@@ -42,7 +42,7 @@ public final class Constants {
         public static final int SHOOTER_MOTOR_7_ID = 7;
 
         // 전류 제한 (A) — Kraken X60 연속 권장: 60~80A
-        public static final double SUPPLY_CURRENT_LIMIT_AMPS = 60.0;
+        public static final double SUPPLY_CURRENT_LIMIT_AMPS = 40.0;
     }
 
     // =========================================================
@@ -60,8 +60,8 @@ public final class Constants {
         public static final double ROLLER_SUPPLY_CURRENT_LIMIT_AMPS = 30.0;
 
         // ── 피벗 전류 제한 ──
-        public static final double PIVOT_CURRENT_LIMIT_AMPS           = 10.0;
-        public static final double PIVOT_SECONDARY_CURRENT_LIMIT_AMPS = 25.0;
+        public static final double PIVOT_CURRENT_LIMIT_AMPS           = 25.0;
+        public static final double PIVOT_SECONDARY_CURRENT_LIMIT_AMPS = 30.0;
 
         // ── 피벗 Position PID 게인 (SparkMax 온보드 PID) ──
         // 튜닝 방법: kP부터 올리며 진동 없는 최대값 찾기 → kD로 오버슈트 억제
@@ -87,7 +87,7 @@ public final class Constants {
         // 인테이크 전개 위치: SmartDashboard "Pivot/Position (rot)" 확인 후 실측값으로 교체
         public static final double PIVOT_INTAKE_POS = -11; // [가정] 실측 필요
         // 한 번 이동량 (rotations)
-        public static final double PIVOT_BUMP_STEP  = 0.5;
+        public static final double PIVOT_BUMP_STEP  = 0.3;
 
         // ── 소프트 리밋 (float, SparkMax 요구) ──
         // 절대 넘어가면 안 되는 하드웨어 경계 — SparkMax가 출력 차단
@@ -101,7 +101,7 @@ public final class Constants {
     public static final class ConveyorConstants {
 
         public static final int CONVEYOR_MOTOR_ID = 10;
-        public static final double CONVEYOR_SPEED = 0.6;
+        public static final double CONVEYOR_SPEED = 1;
         public static final boolean CONVEYOR_INVERTED = false;
         public static final double CONVEYOR_CURRENT_LIMIT_AMPS = 35.0;
     }
