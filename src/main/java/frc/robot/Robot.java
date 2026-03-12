@@ -3,11 +3,13 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.TagDistanceHoldCommand;
 
 public class Robot extends TimedRobot {
 
-    private RobotContainer m_robotContainer;
-    private Command        m_autonomousCommand;
+    private RobotContainer         m_robotContainer;
+    private Command                m_autonomousCommand;
+    private TagDistanceHoldCommand m_distHoldCommand;
 
     @Override
     public void robotInit() {
@@ -22,7 +24,6 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         m_robotContainer.resetGyro();
-
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
         if (m_autonomousCommand != null) {
             m_autonomousCommand.schedule();
@@ -31,20 +32,34 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
-        // 오토 커맨드 강제 취소
         if (m_autonomousCommand != null) {
             m_autonomousCommand.cancel();
         }
-
-        // 오토에서 피벗이 내려간 채로 끝났을 경우를 대비해 HOME 위치로 목표 리셋
-        // (실제 모터가 올라가진 않고, PID 목표값만 HOME으로 바꿔서 텔레옵 시작 시 올라감)
         m_robotContainer.resetPivotToHome();
+    }
+
+    // ── Test 모드: AprilTag ID 10/26 거리 1m 유지 ────────────────
+    @Override
+    public void testInit() {
+        CommandScheduler.getInstance().cancelAll();
+        m_distHoldCommand = m_robotContainer.createDistHoldCommand();
+        m_distHoldCommand.schedule();
+    }
+
+    @Override
+    public void testPeriodic() {
+        // CommandScheduler가 robotPeriodic()에서 이미 실행하므로 별도 코드 불필
+    }
+
+    @Override
+    public void testExit() {
+        if (m_distHoldCommand != null) {
+            m_distHoldCommand.cancel();
+        }
     }
 
     @Override public void disabledInit()       {}
     @Override public void disabledPeriodic()   {}
     @Override public void autonomousPeriodic() {}
     @Override public void teleopPeriodic()     {}
-    @Override public void testInit()           { CommandScheduler.getInstance().cancelAll(); }
-    @Override public void testPeriodic()       {}
 }

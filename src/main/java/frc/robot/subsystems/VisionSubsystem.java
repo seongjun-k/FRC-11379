@@ -13,6 +13,7 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class VisionSubsystem extends SubsystemBase {
@@ -39,15 +40,10 @@ public class VisionSubsystem extends SubsystemBase {
         return m_photonEstimator.update(m_camera.getLatestResult());
     }
 
-    /** 아무 AprilTag든 시야에 있으면 true */
     public boolean hasTarget() {
         return m_camera.getLatestResult().hasTargets();
     }
 
-    /**
-     * 가장 잘 보이는 타겟의 Yaw 반환.
-     * 양수 = 타겟이 왼쪽, 음수 = 오른쪽. 없으면 0.0
-     */
     public double getTargetYaw() {
         var result = m_camera.getLatestResult();
         if (result.hasTargets()) {
@@ -57,23 +53,54 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     /**
-     * 지정된 ID 중 하나가 보이면 해당 Yaw 반환.
-     * 둘 다 보이면 가장 앞쪽(fiducialId 순서 무관, ambiguity 낮은) 것 우선.
-     * 해당 ID가 없으면 Double.NaN 반환.
-     *
-     * @param ids 검색할 AprilTag ID 목록
+     * 지정 ID 중 하나가 보이면 Yaw 반환, 없으면 NaN
      */
     public double getTargetYawById(int... ids) {
         var result = m_camera.getLatestResult();
         if (!result.hasTargets()) return Double.NaN;
+        for (PhotonTrackedTarget t : result.getTargets()) {
+            for (int id : ids) {
+                if (t.getFiducialId() == id) return t.getYaw();
+            }
+        }
+        return Double.NaN;
+    }
 
+    /**
+     * 지정 ID 중 하나가 보이면 카메라 기준 수평 거리(m) 반환, 없으면 NaN
+     * PhotonVision getBestCameraToTarget() 의 Translation X = 정면 거리
+     */
+    public double getTargetDistanceById(int... ids) {
+        var result = m_camera.getLatestResult();
+        if (!result.hasTargets()) return Double.NaN;
         for (PhotonTrackedTarget t : result.getTargets()) {
             for (int id : ids) {
                 if (t.getFiducialId() == id) {
-                    return t.getYaw();
+                    Transform3d camToTarget = t.getBestCameraToTarget();
+                    // X: 정면 거리, Y: 좌우 오프셋
+                    // 수평 직선 거리 = sqrt(X^2 + Y^2)
+                    double x = camToTarget.getX();
+                    double y = camToTarget.getY();
+                    return Math.sqrt(x * x + y * y);
                 }
             }
         }
         return Double.NaN;
+    }
+
+    @Override
+    public void periodic() {
+        var result = m_camera.getLatestResult();
+        if (result.hasTargets()) {
+            PhotonTrackedTarget best = result.getBestTarget();
+            SmartDashboard.putNumber("Vision/BestTagID",  best.getFiducialId());
+            SmartDashboard.putNumber("Vision/Yaw (deg)",  best.getYaw());
+            Transform3d c2t = best.getBestCameraToTarget();
+            double dist = Math.sqrt(c2t.getX() * c2t.getX() + c2t.getY() * c2t.getY());
+            SmartDashboard.putNumber("Vision/Distance (m)", dist);
+        } else {
+            SmartDashboard.putNumber("Vision/BestTagID",  -1);
+            SmartDashboard.putNumber("Vision/Distance (m)", -1);
+        }
     }
 }
