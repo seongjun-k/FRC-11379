@@ -32,7 +32,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 public class Auto0 extends SequentialCommandGroup {
 
     private static final double DRIVE_SPEED    = -0.5; // 후진 = 음수
-    private static final double DRIVE_SECONDS  = 2.0;
+    private static final double DRIVE_SECONDS  = 1.0;
     private static final double SPINUP_SECONDS = 0.5;
     private static final double SHOOT_OUTPUT   = 1.0;
     private static final double SHOOT_SECONDS  = 10.0; // 남은 오토 시간 채우기
