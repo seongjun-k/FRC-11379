@@ -126,4 +126,9 @@ public class RobotContainer {
     public void resetGyro() {
         m_drive.zeroGyro();
     }
+
+    /** 텔레옵 진입 시 피벗 PID 목표를 HOME으로 리셋 */
+    public void resetPivotToHome() {
+        m_intakePivot.retractIntake();
+    }
 }
