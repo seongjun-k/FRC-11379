@@ -84,10 +84,11 @@ public class RobotContainer {
         // RB → 슈터 정방향   RT → 슈터 역방향   D-pad ±5%
         m_shooter.setDefaultCommand(new ShooterCommand(
             m_shooter,
-            () -> m_operator.getHID().getRightBumper(),
+            m_operator.rightBumper(),
             m_operator::getRightTriggerAxis,
             () -> m_operator.getHID().getPOV() == 0,
             () -> m_operator.getHID().getPOV() == 180
+
         ));
 
         // B → 컨베이어 패턴 (0.15초 ON / 0.40초 OFF)

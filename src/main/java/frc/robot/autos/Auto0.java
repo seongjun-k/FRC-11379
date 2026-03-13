@@ -44,21 +44,22 @@ public class Auto0 extends SequentialCommandGroup {
         ConveyorSubsystem conveyor
     ) {
         addCommands(
-            // 1. 인테이크 피벗 DOWN (전개)
+            // 1. 후진
+            new RunCommand(() -> drive.arcadeDrive(DRIVE_SPEED, 0), drive)
+                .withTimeout(DRIVE_SECONDS),
+            
+            new InstantCommand(() -> drive.arcadeDrive(0, 0), drive),
+
+            // 2. 인테이크 피벗 DOWN (전개)
             new IntakePivotCommand(pivot, Direction.DOWN)
                 .withTimeout(1.5),
 
-            // 2. 후진
-            new RunCommand(() -> drive.arcadeDrive(DRIVE_SPEED, 0), drive)
-                .withTimeout(DRIVE_SECONDS),
-
             // 3. 정지
-            new InstantCommand(() -> drive.arcadeDrive(0, 0), drive),
-
+            
             // 4. 슈터 스핀업
             new RunCommand(() -> {
                 shooter.setOutput(SHOOT_OUTPUT);
-                shooter.setMotor6Fixed(SHOOT_OUTPUT);
+                // shooter.setMotor6Fixed(SHOOT_OUTPUT);
             }, shooter).withTimeout(SPINUP_SECONDS),
 
             // 5. 슈터 유지 + 0.5초 뒤 컨베이어 ON
@@ -66,7 +67,7 @@ public class Auto0 extends SequentialCommandGroup {
                 // 슈터는 SHOOT_SECONDS 내내 구동
                 new RunCommand(() -> {
                     shooter.setOutput(SHOOT_OUTPUT);
-                    shooter.setMotor6Fixed(SHOOT_OUTPUT);
+                    // shooter.setMotor6Fixed(SHOOT_OUTPUT);
                 }, shooter).withTimeout(SHOOT_SECONDS),
 
                 // 컨베이어는 0.5초 후 시작

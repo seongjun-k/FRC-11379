@@ -26,7 +26,7 @@ public class DriveCommand extends Command {
      * 너무 느리게 벘어짐 → 올리기 (3.0, 4.0)
      * 여전히 전복 위험 → 낮춰라 (1.0, 1.5)
      */
-    private static final double FORWARD_SLEW_RATE  = 4.0;
+    private static final double FORWARD_SLEW_RATE  = 3.0;
 
     /**
      * 회전 가속 제한

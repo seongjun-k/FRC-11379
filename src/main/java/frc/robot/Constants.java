@@ -9,7 +9,7 @@ public final class Constants {
         public static final int RIGHT_REAR_ID  = 4;
 
         public static final double DRIVE_SPEED_SCALE    = 0.6;
-        public static final double DRIVE_ROTATION_SCALE = 0.35;
+        public static final double DRIVE_ROTATION_SCALE = 0.55;
         public static final double SUPPLY_CURRENT_LIMIT_AMPS = 40.0;
 
         public static final double WHEEL_DIAMETER_METERS = 0.1524;
@@ -67,6 +67,6 @@ public final class Constants {
 
         // 패턴 타이멑
         public static final double CONVEYOR_RUN_TIME  = 0.15; // 0.15초 ON
-        public static final double CONVEYOR_STOP_TIME = 0.40; // 0.40초 OFF
+        public static final double CONVEYOR_STOP_TIME = 0.30; // 0.40초 OFF
     }
 }
